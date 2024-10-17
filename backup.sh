@@ -51,12 +51,9 @@ fi
 files=$(ls $1)
 for fname in "$1"
 do  
-    if [[ -f "$fname" ]]
+    if [[ -d "$2/$fname" ]]
     then
-        echo $fname
-    elif [[ -d $fname ]]
-    then
-        echo DIR $fname
+        
     fi
 done
 
