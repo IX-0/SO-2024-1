@@ -24,7 +24,12 @@ do
         exit 1
     ;;
     *)
-        _args="$_args $1"
+        pttrn='\/$'
+        if [[ ! $1 =~ $pttrn ]]; then
+            _args="$_args $1/"
+        else
+            _args="$_args $1"
+        fi
         shift
     ;;
     esac
@@ -39,7 +44,7 @@ then
     case "$#" in
         0) echo "Missing workdir argument"
         ;;
-        1) echo "Missing backupdir argument"
+        1) echo "Missing backupdir argumfent"
         ;;
         *) echo "Too many arguments"
         ;;
@@ -47,13 +52,17 @@ then
     exit 1
 fi
 
-#Traverse the fs
-files=$(ls $1)
-for fname in "$1"
-do  
-    if [[ -d "$2/$fname" ]]
+#Check if dirs end in /
+for fname in $1*
+do
+    if [[ -d $fname ]]
     then
-        
+        echo DIR: $fname
+        bash "$0" "$1$(basename $fname)" "$2$fname"
+        echo DIREND
+    elif [[ -f $fname ]]
+    then
+        echo FILE: "$fname"
     fi
 done
 
