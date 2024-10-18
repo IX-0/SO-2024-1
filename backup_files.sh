@@ -1,7 +1,7 @@
 #!/bin/bash
 
 backup(){
-    if [ ! -e $1 ];then
+    if [ ! -d $1 ];then
         echo "no such work diretory to backup"; #If workdir doesnt exist, exit immediatly
         exit 1 # function failed
     fi
@@ -34,7 +34,7 @@ checking(){
     echo "  [-b tfile]    Specify a text file containing a list of files/directories to exclude from the backup."
     echo "  [-r regexpr]  Only backup files that match the provided regular expression."
 }
-#In this version of the script, seeing that $1 is either -c or the workdir, this works perfectly. Verifying the order of the flags and args must be done in backup.sh though. And then combine it with these functions here.
+#In this version of the script, seeing that $0 is either -c or the workdir, this works perfectly. Verifying the order of the flags and args must be done in backup.sh though. And then combine it with these functions here.
 
 if [ "$1" == '-c' ]; then
     checking
