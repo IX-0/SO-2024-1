@@ -48,12 +48,17 @@ then
 fi
 
 #Traverse the fs
-files=$(ls $1)
-for fname in "$1"
-do  
-    if [[ -d "$2/$fname" ]]
+for fname in $1*
+do
+    fbasename=$(basename $fname)
+    if [[ -d $fname ]]
     then
-        
+        echo DIR: $fname
+        bash "$0" "$1$fbasename" "$2$fbasename"
+        echo DIREND
+    elif [[ -f $fname ]]
+    then
+        echo FILE: "$fname"
     fi
 done
 
