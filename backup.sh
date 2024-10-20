@@ -90,7 +90,6 @@ then
     exit 1
 fi
 
-echo "$backupdir"
 #Create backupDir if needed
 if [[ ! -d "$backupdir" ]]
 then
@@ -103,10 +102,7 @@ do
     fbasename=$(basename "$fname")
     if [[ -d "$fname" ]]
     then
-        bash "$0" "$workdir/$fbasename" "$backupdir/$fbasename"
-    elif [[ -f "$fname" ]]
-    then
-        echo FILE FOUND
+        $0 "$workdir/$fbasename" "$backupdir/$fbasename"
     fi
 done
 
