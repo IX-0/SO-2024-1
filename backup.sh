@@ -30,6 +30,7 @@ do
 done
 
 #Strip flags and argument flags from argument list
+_flags=
 shift $(($OPTIND - 1))
 
 if $_help
@@ -93,12 +94,12 @@ fi
 #Create backupDir if needed
 if [[ ! -d "$backupdir" ]]
 then
-    mkdir "$backupdir"
+    mkdirHelper $backupdir
 fi
 
 #Traverse the fs
 for fname in "$workdir"/*
-do    
+do   
     fbasename=$(basename "$fname")
     if [[ -d "$fname" ]]
     then
