@@ -1,9 +1,5 @@
 #!/bin/bash
 
-#Ensure LOCALE is set to C for compatibility
-export LC_ALL=C
-
-#Vars
 _checking=false
 _help=false
 _regex=false
@@ -58,17 +54,15 @@ then
     fi
 fi
 
-#Ensure no missing or excess argument
-if [[ $# -ne 2 ]]
+#Check if there are the right number of arguments
+if [[ ! $# -eq 2 ]]
 then
-    case "$#" in
-        0) echo "Missing workdir argument"
-        ;;
-        1) echo "Missing backupdir argument"
-        ;;
-        *) echo "Too many arguments"
-        ;;
-    esac
+    if [[ $# -lt 2 ]] 
+    then 
+        echo "Missing arguments"
+    else
+        echo "Too many arguments"
+    fi
     exit 1
 fi
 
@@ -96,14 +90,6 @@ then
     mkdir "$backupdir"
 fi
 
-#Traverse the fs
-for fname in "$workdir"/*
-do    
-    fbasename=$(basename "$fname")
-    if [[ -d "$fname" ]]
-    then
-        $0 "$workdir/$fbasename" "$backupdir/$fbasename"
-    fi
-done
+echo -e "Tfile: $_tfile\nRegexpr: $_regexpr\nPosicional arguments: $@"
 
-exit 0 #Made with love by Igor Baltarejo & Gonçalo Almeida
+exit 0
