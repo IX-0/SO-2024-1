@@ -38,7 +38,6 @@ fi
 
 
 #Resolve full paths
->>>>>>> d93ba31a57b068d8e4e6c1666bac0f5944cc3915
 workdir=$(realpath "$1")
 backupdir=$(realpath "$2")
 

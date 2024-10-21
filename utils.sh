@@ -2,19 +2,6 @@
 
 cpHelper(){
 
-
-    if [[ ! -d "$1" ]]
-    then
-        echo "no such work diretory to backup" #If workdir doesnt exist, exit immediatly
-        exit 1
-    elif [[ ! -d "$2" ]]
-    then
-        echo "mkdir $2"
-        if ! $_checking 
-        then
-            mkdir $2
-        fi
-    fi
     backupdir=$(realpath "$2")
     workdir=$(realpath "$1")
     for file in $workdir
@@ -40,5 +27,41 @@ cpHelper(){
             echo "cp -a $file "$backupdir/$file""
         fi 
     done
+
+}
+
+mkdirHelper(){
+    echo "mkdir $2"
+    if ! $_checking 
+    then
+        mkdir $2
+    fi
+}
+
+removeHelper(){  #checks if there are files or diretories in backupdir that do not exist in workdir and rm them
+    workdir=$(realpath "$1")
+    backupdir=$(realpath "$2")
+    for item in $backupdir
+    do
+        if [[-f "$item"]]
+        then
+            if [[! "$item" -f "$workdir" ]]
+            then
+                if ! $_checking
+                then
+                    rm $item
+                fi
+                echo "rm $item"
+            fi
+        else
+            if [[ ! "$item" -d "$workdir" ]]
+            then
+                if ! $_checking
+                then
+                    rm -r $item
+                fi    
+                echo "rm -r $item"
+            fi
+
 
 }
