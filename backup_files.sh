@@ -8,6 +8,7 @@ then
 elif [[ ! -d $2 ]]; then
     mkdir $2
 fi
+
 backupdir=$(realpath "$2")
 workdir=$(realpath "$1")
 for file in $workdir
