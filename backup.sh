@@ -30,7 +30,7 @@ do
 done
 
 #Strip flags and argument flags from argument list
-_flags=
+_flags=$@()
 shift $(($OPTIND - 1))
 
 if $_help
@@ -94,7 +94,7 @@ fi
 #Create backupDir if needed
 if [[ ! -d "$backupdir" ]]
 then
-    mkdirHelper $backupdir
+    mkdirHelper -c $backupdir
 fi
 
 #Traverse the fs
