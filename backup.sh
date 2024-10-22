@@ -32,7 +32,7 @@ rmHelper(){
     echo "rm $1"
     if ! $_checking
     then
-        rm "$1"
+        rm -r "$1"
         return $?
     fi
 }
@@ -130,7 +130,8 @@ do
     fname=$(basename "$fpath")
     if [[ ! -f "$fpath" ]]
     then
-        $0 "$fpath" "$workdir/$fname"
+        $0 "$fpath" "$backupdir/$fname" #Pass the flags
+        continue
     fi
 
     if [[ ! -f "$backupdir/$fname" ]] || [[ "$fpath" -nt "$backupdir/$fname" ]]
@@ -145,7 +146,7 @@ done
 for fpath in "$backupdir"/*
 do
     fname=$(basename "$fpath")
-    if [[ ! -f "$workdir/$fname" ]]
+    if [[ ! -e "$workdir/$fname" ]]
     then 
         rmHelper "$fpath"
     fi
