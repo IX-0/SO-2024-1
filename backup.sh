@@ -8,6 +8,7 @@ _checking=false
 _help=false
 _regex=false
 _file=false
+_flags=""
 
 #Helper functions for use of _checking
 cpHelper(){
@@ -43,19 +44,25 @@ while getopts ":chb:r:" flag
 do 
     case $flag in
         c) 
-            _checking=true ;;
+            _checking=true 
+            ;;
         h) 
-            _help=true ;;
+            _help=true 
+            ;;
         b)  
             _tfile=$OPTARG
-            _file=true ;;
+            _file=true 
+            ;;
         r)
             _regexpr=$OPTARG
-           _regex=true ;;
+            _regex=true
+            ;;
         ?)
             echo "Invalid option -$OPTARG: aborting backup"
-            exit 1 ;;
+            exit 1 
+            ;;
     esac
+    _flags="$_flags -$flag $OPTARG"
 done
 
 #Strip flags and argument flags from argument list
@@ -128,24 +135,43 @@ fi
 for fpath in "$workdir"/*
 do
     fname=$(basename "$fpath")
-    if [[ ! -f "$fpath" ]]
+
+    if [[ "$fname" == "*" ]]
     then
-        $0 "$fpath" "$backupdir/$fname" #Pass the flags
+        break
+    fi
+
+    if [[ -d "$fpath" ]]
+    then
+        $0 $_flags "$fpath" "$backupdir/$fname"
         continue
     fi
 
     if [[ ! -f "$backupdir/$fname" ]] || [[ "$fpath" -nt "$backupdir/$fname" ]]
     then
+        
+        #Check for regex
+        if $_regex && [[ ! "$fname" =~ $_regexpr ]]
+        then
+            continue
+        fi
+
         cpHelper "$fpath" "$backupdir/$fname"    
+        
     elif [[ "$fpath" -ot "$backupdir/$fname" ]]
     then
         echo "WARNING"
     fi
 done
 
-for fpath in "$backupdir"/*
+for fpath in "$backupdir"/* 
 do
     fname=$(basename "$fpath")
+    if [[ "$fname" == "*" ]]
+    then
+        break
+    fi
+
     if [[ ! -e "$workdir/$fname" ]]
     then 
         rmHelper "$fpath"
