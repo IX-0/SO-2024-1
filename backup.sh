@@ -103,7 +103,7 @@ do
     fbasename=$(basename "$fname")
 
     #
-    if [[ $_regex && ! "$fbasename" =~ "$regexpr" ]]
+    if [[ $_regex ]] && [[ ! "$fbasename" =~ $regexpr ]]
     then
         continue
     fi
