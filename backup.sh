@@ -9,6 +9,35 @@ _help=false
 _regex=false
 _file=false
 
+#Helper functions for use of _checking
+cpHelper(){
+    echo "cp -a $1 $2"
+    if ! $_checking 
+    then
+        cp -a "$1" "$2"
+        return $?
+    fi
+}
+
+mkdirHelper(){
+    echo "mkdir $1"
+    if ! $_checking 
+    then
+        mkdir "$1"
+        return $?
+    fi
+}
+
+rmHelper(){
+    echo "rm $1"
+    if ! $_checking
+    then
+        # rm "$1"
+        return $?
+    fi
+}
+
+
 #Argument and flag parsing
 while getopts ":chb:r:" flag
 do 
@@ -30,7 +59,7 @@ do
 done
 
 #Strip flags and argument flags from argument list
-_flags=$@()
+# _flags=$@()
 shift $(($OPTIND - 1))
 
 if $_help
@@ -82,6 +111,7 @@ fi
 
 #Resolve full paths
 workdir=$(realpath "$1")
+echo "$2"
 backupdir=$(realpath "$2")
 
 #Check if backupDir is a subdirectory of workingDir
@@ -94,25 +124,36 @@ fi
 #Create backupDir if needed
 if [[ ! -d "$backupdir" ]]
 then
-    mkdirHelper -c $backupdir
+    mkdirHelper $backupdir
 fi
 
 #Traverse the fs
-for fname in "$workdir"/*
-do  
-    fbasename=$(basename "$fname")
-
-    #
-    if [[ $_regex && ! "$fbasename" =~ "$regexpr" ]]
+for fpath in "$workdir"/*
+do
+    fname=$(basename "$fpath")
+    if [[ -d "$fpath" ]]
     then
-        continue
+        $0 "$fpath" "$backupdir/$fname"
     fi
-    
-    #
-    if [[ -d "$fname" ]]
+
+    if [[ ! -f "$backupdir/$fname" ]] || [[ "$fpath" -nt "$backupdir/$fname" ]]
     then
-        $0 "$workdir/$fbasename" "$backupdir/$fbasename"
+        cpHelper "$fpath" "$backupdir/$fname"    
+    elif [[ "$fpath" -ot "$backupdir/$fname" ]]
+    then
+        echo "WARNING"
     fi
 done
+
+for fpath in "$backupdir"/*
+do
+    fname=$(basename "$fpath")
+    if [[ ! -f "$workdir/$fname" ]]
+    then 
+        rmHelper "$fpath"
+    fi
+done 
+
+echo -e "\n"
 
 exit 0 #Made with love by Igor Baltarejo & Gonçalo Almeida
