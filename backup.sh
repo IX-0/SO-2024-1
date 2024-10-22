@@ -129,7 +129,7 @@ for fpath in "$workdir"/*
 do
     fullPath=$(realpath $fpath)
     cutPath="${fullPath##$workdir}"  
-    if [[ $_file ]] && [[ -e grep "$cutPath" $_tfile ]]
+    if [[ $_file ]] &&  grep -q "$cutPath" "$_tfile"
     then
         continue
     fi
