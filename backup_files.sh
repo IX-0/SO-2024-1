@@ -106,7 +106,7 @@ then
     exit 0
 fi
 
-if [[ ! -d $1 ]]
+if [[ ! -d "$1" ]]
 then
     echo "no such work diretory to backup" 
     exit 1

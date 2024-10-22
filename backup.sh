@@ -73,7 +73,7 @@ then
     exit 1
 fi
 
-#Check for the existence of the workingDir
+#Check for the existence of the workDir
 if [[ ! -d "$1" ]]
 then
     echo "Bad argument: '$1' is not a directory"
@@ -99,8 +99,16 @@ fi
 
 #Traverse the fs
 for fname in "$workdir"/*
-do   
+do  
     fbasename=$(basename "$fname")
+
+    #
+    if [[ $_regex && ! "$fbasename" =~ "$regexpr" ]]
+    then
+        continue
+    fi
+    
+    #
     if [[ -d "$fname" ]]
     then
         $0 "$workdir/$fbasename" "$backupdir/$fbasename"
