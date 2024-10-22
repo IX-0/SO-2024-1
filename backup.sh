@@ -98,7 +98,7 @@ then
 fi
 
 #Traverse the fs
-for fname in "$workdir"/*
+for fpath in "$workdir"/*
 do  
     fbasename=$(basename "$fname")
 

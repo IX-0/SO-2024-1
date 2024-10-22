@@ -7,26 +7,6 @@ export LC_ALL=C
 _checking=false
 _help=false
 
-# cpHelper(){
-#
-#     backupdir=$(realpath "$2")
-#     workdir=$(realpath "$1")
-#     for file in $workdir
-#     do
-#         if [[ -f "$backupdir/$file" ]]
-#         then
-#             if [[ "$file" -nt "$backupdir/$file" ]]
-#             then
-#                 cpHelper "$file" "$backupdir/$file"    
-#             else
-#                 echo "WARNING: backup entry $2/$file is newer than $file; Should not happen"
-#                 continue
-#             fi
-#         else
-#             cpHelper "$file" "$backupdir/$file"
-#         fi 
-#     done
-# }
 #Helper functions for use of _checking
 cpHelper(){
     echo "cp -a $1 $2"
@@ -54,34 +34,6 @@ rmHelper(){
         return $?
     fi
 }
-
-# removeHelper(){  #checks if there are files or diretories in backupdir that do not exist in workdir and rm them
-#     workdir=$(realpath "$1")
-#     backupdir=$(realpath "$2")
-#     for item in $backupdir
-#     do
-#         if [[-f "$item"]]
-#         then
-#             if [[! "$item" -f "$workdir" ]]
-#             then
-#                 if ! $_checking
-#                 then
-#                     rm $item
-#                 fi
-#                 echo "rm $item"
-#             fi
-#         else
-#             if [[ ! "$item" -d "$workdir" ]]
-#             then
-#                 if ! $_checking
-#                 then
-#                     rm -r $item
-#                 fi    
-#                 echo "rm -r $item"
-#             fi
-#         fi
-#     done
-# }
 
 #Argument and flag parsing
 while getopts ":ch" flag
@@ -143,20 +95,33 @@ do
     elif [[ "$fpath" -ot "$backupdir/$fname" ]]
     then
         echo "WARNING"
+    f#Helper functions for use of _checking
+cpHelper(){
+    echo "cp -a $1 $2"
+    if ! $_checking 
+    then
+        cp -a "$1" "$2"
+        return $?
     fi
+}
 
-    # if [[ -f "$backupdir/$file" ]]
-    # then
-    #     if [[ $file -nt $backupdir/$file ]]
-    #     then
-    #         cpHelper $file "$backupdir/$file"
-    #     else
-    #         echo "WARNING: backup entry $2/$file newer than $file"
-    #         continue
-    #     fi
-    # else
-    #     cpHelper $file "$backupdir/$file" 
-    # fi  
+mkdirHelper(){
+    echo "mkdir $1"
+    if ! $_checking 
+    then
+        mkdir "$1"
+        return $?
+    fi
+}
+
+rmHelper(){
+    echo "rm $1"
+    if ! $_checking
+    then
+        rm "$1"
+        return $?
+    fi
+}
 done
 
 for fpath in "$backupdir"/*
