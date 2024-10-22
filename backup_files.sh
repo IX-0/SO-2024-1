@@ -95,33 +95,7 @@ do
     elif [[ "$fpath" -ot "$backupdir/$fname" ]]
     then
         echo "WARNING"
-    f#Helper functions for use of _checking
-cpHelper(){
-    echo "cp -a $1 $2"
-    if ! $_checking 
-    then
-        cp -a "$1" "$2"
-        return $?
     fi
-}
-
-mkdirHelper(){
-    echo "mkdir $1"
-    if ! $_checking 
-    then
-        mkdir "$1"
-        return $?
-    fi
-}
-
-rmHelper(){
-    echo "rm $1"
-    if ! $_checking
-    then
-        rm "$1"
-        return $?
-    fi
-}
 done
 
 for fpath in "$backupdir"/*
