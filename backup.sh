@@ -43,6 +43,8 @@ backUp() {
     local workdir="$1"
     local backupdir="$2"
 
+
+
     #Create backupDir if needed
     if [[ ! -d "$backupdir" ]]
     then
@@ -66,13 +68,29 @@ backUp() {
 
         if [[ ! -f "$backupdir/$fname" ]] || [[ "$fpath" -nt "$backupdir/$fname" ]]
         then
-
             #Check for regex
             if $_regex && [[ ! "$fname" =~ $_regexpr ]]
             then
                 continue
             fi
 
+            
+            relPath=${fpath##$_workdir/} 
+            grepstr=$(grep -i -E "^($_workdir)?/?$relPath$" "$_tfile")
+<<debugTools
+            echo "workdir_path: $_workdir/"
+            echo "relPath: $relPath"
+            echo "grepstr: $grepstr"
+
+debugTools
+            if $_file
+            then
+                if [[ "$grepstr" == "$relPath" ]] || [[ "$grepstr" == "$fpath" ]]
+                then
+                    echo "$fname ignored"
+                    continue
+                fi
+            fi
             cpHelper "$fpath" "$backupdir/$fname"
             
         elif [[ "$fpath" -ot "$backupdir/$fname" ]]
