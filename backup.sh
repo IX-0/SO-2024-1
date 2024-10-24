@@ -30,7 +30,7 @@ mkdirHelper(){
 }
 
 rmHelper(){
-    echo "rm $1"
+    echo "rm -r $1"
     if ! $_checking
     then
         rm -r "$1"
@@ -38,6 +38,63 @@ rmHelper(){
     fi
 }
 
+backUp() {
+
+    local workdir="$1"
+    local backupdir="$2"
+
+    #Create backupDir if needed
+    if [[ ! -d "$backupdir" ]]
+    then
+        mkdirHelper "$backupdir"
+    fi
+
+    for fpath in "$workdir"/*
+    do
+        fname=$(basename "$fpath")
+
+        if [[ "$fname" == "*" ]]
+        then
+            break
+        fi
+        
+        if [[ -d "$fpath" ]]
+        then
+            backUp "$fpath" "$backupdir/$fname"
+            continue
+        fi
+
+        if [[ ! -f "$backupdir/$fname" ]] || [[ "$fpath" -nt "$backupdir/$fname" ]]
+        then
+
+            #Check for regex
+            if $_regex && [[ ! "$fname" =~ $_regexpr ]]
+            then
+                continue
+            fi
+
+            cpHelper "$fpath" "$backupdir/$fname"
+            
+        elif [[ "$fpath" -ot "$backupdir/$fname" ]]
+        then
+            echo "WARNING"
+        fi
+    done
+
+    for fpath in "$backupdir"/* 
+    do
+        fname=$(basename "$fpath")
+        if [[ "$fname" == "*" ]]
+        then
+            break
+        fi
+
+        if [[ ! -e "$workdir/$fname" ]]
+        then 
+            rmHelper "$fpath"
+        fi
+    done
+}
 
 #Argument and flag parsing
 while getopts ":chb:r:" flag
@@ -116,8 +173,8 @@ then
 fi
 
 #Resolve full paths
-workdir=$(realpath "$1")
-backupdir=$(realpath "$2")
+_workdir=$(realpath "$1")
+_backupdir=$(realpath "$2")
 
 #Check if backupDir is a subdirectory of workingDir
 if [[  "${backupdir##$workdir}" != "$backupdir" ]]
@@ -126,62 +183,6 @@ then
     exit 1
 fi
 
-#Create backupDir if needed
-if [[ ! -d "$backupdir" ]]
-then
-    mkdirHelper "$backupdir"
-fi
-
-for fpath in "$workdir"/*
-do
-    fullPath=$(realpath $fpath)
-    cutPath="${fullPath##$workdir}"  
-    if [[ $_file ]] &&  grep -q "$cutPath" "$_tfile"
-    then
-        continue
-    fi
-    fname=$(basename "$fpath")
-
-    if [[ "$fname" == "*" ]]
-    then
-        break
-    fi
-
-    if [[ -d "$fpath" ]]
-    then
-        $0 $_flags "$fpath" "$backupdir/$fname"
-        continue
-    fi
-
-    if [[ ! -f "$backupdir/$fname" ]] || [[ "$fpath" -nt "$backupdir/$fname" ]]
-    then
-        
-        #Check for regex
-        if $_regex && [[ ! "$fname" =~ $_regexpr ]]
-        then
-            continue
-        fi
-
-        cpHelper "$fpath" "$backupdir/$fname"    
-        
-    elif [[ "$fpath" -ot "$backupdir/$fname" ]]
-    then
-        echo "WARNING"
-    fi
-done
-
-for fpath in "$backupdir"/* 
-do
-    fname=$(basename "$fpath")
-    if [[ "$fname" == "*" ]]
-    then
-        break
-    fi
-
-    if [[ ! -e "$workdir/$fname" ]]
-    then 
-        rmHelper "$fpath"
-    fi
-done 
+backUp "$_workdir" "$_backupdir"
 
 exit 0 #Made with love by Igor Baltarejo & Gonçalo Almeida
