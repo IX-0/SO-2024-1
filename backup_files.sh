@@ -6,6 +6,8 @@ export LC_ALL=C
 #Vars
 _checking=false
 _help=false
+_workdir=
+_backupdir=
 
 #Helper functions for use of _checking
 cpHelper(){
@@ -109,7 +111,3 @@ done
 
 echo "BACKUP DONE"
 exit 0 #Made with love by Igor Baltarejo & Gonçalo Almeida
-
-#TESTS:
-#Files and directories with spaces in their names
-#Having files open with trying to copy or remove them

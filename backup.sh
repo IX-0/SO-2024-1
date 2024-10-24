@@ -8,7 +8,8 @@ _checking=false
 _help=false
 _regex=false
 _file=false
-_flags=""
+_workdir=
+_backupdir=
 
 #Helper functions for use of _checking
 cpHelper(){

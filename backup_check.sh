@@ -1,3 +1,13 @@
+#!/bin/bash
+
+#Ensure LOCALE is set to C for compatibility
+export LC_ALL=C
+
+#Vars
+_help=false
+_workdir=
+_backupdir=
+
 compareFiles() {
     #Returns 0 if contents are equal, 1 if not
     #Using md5sum
@@ -37,6 +47,45 @@ backupCheck() {
         fi
     done
 }
+
+while getotps ":h" flag
+do 
+    case $flag
+        h)
+            _help=true
+            ;;
+        *)
+            echo "Unsuported flag -$flag: quitting backup_check.sh"
+            exit 1
+            ;;
+    esac
+done
+
+shift $(($OPTIND - 1))
+
+if $_help
+then
+    echo "Usage: backup_check.sh workdir backupdir"
+    exit 0
+fi 
+
+if [[ $# -ne 2 ]]
+then
+    echo "Wrong number of arguments"
+    exit 1
+fi
+
+if [[ ! -d "$1" ]]
+then
+      echo "Bad argument: $1 is not a directory"
+      exit 1
+fi
+
+if [[ ! -d "$2" ]]
+then
+      echo "Bad argument: $2 is not a directory"
+      exit 1
+fi
 
 #Resolve full paths
 _workdir=$(realpath "$1")
