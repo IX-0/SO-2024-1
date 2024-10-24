@@ -135,7 +135,7 @@ if $_file
 then
     if [[ ! -f $_tfile ]]
     then  
-        echo "Bad argument for -b: '$_tfile' is not a file"
+        echo "Bad argument for -b: '$_tfile' is not a file or doesn't exist"
         exit 1
     fi
 fi
@@ -146,7 +146,7 @@ then
     echo "" | grep -P "$_regexpr" 2>/dev/null
     if [[ $? -eq 2 ]]
     then
-        echo "Bad argument for -r: '$_regexpr' is an invalid regex expression"
+        echo "Bad argument for -r: '$_regexpr' isn't a valid regex expression"
         exit 1
     fi
 fi
@@ -184,5 +184,6 @@ then
 fi
 
 backUp "$_workdir" "$_backupdir"
+echo BACKUP DONE
 
 exit 0 #Made with love by Igor Baltarejo & Gonçalo Almeida
