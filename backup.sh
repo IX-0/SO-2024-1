@@ -39,6 +39,34 @@ rmHelper(){
     fi
 }
 
+fileFiltering(){
+    if $_file
+    then
+        fpath=$1
+        relPath=${fpath##$_workdir/} #passar fpath
+        grepstr=$(grep -i -E "^($_workdir)?/?$relPath/?$" "$_tfile")
+        echo "workdir_path: $_workdir/"
+        echo "relPath: $relPath"
+        echo "grepstr: $grepstr"
+
+        if [[ "$grepstr" =~ ^$relPath/?$ ]] || [[ "$grepstr" == "$fpath" ]]
+        then
+            if [[ -d "$fpath" ]]
+            then
+                echo "$fpath ignored"
+                return 0
+            fi
+            fname=$(basename "")    
+            echo "$fname ignored"
+            return 0
+        fi
+        return 1
+    fi
+    return 1
+
+}
+
+
 backUp() {
 
     local workdir="$1"
@@ -63,22 +91,13 @@ backUp() {
         
         if [[ -d "$fpath" ]]
         then
-
-            relPath=${fpath##$_workdir/} 
-            grepstr=$(grep -i -E "^($_workdir)?/?$relPath/?$" "$_tfile")
-<<debugTools
-            echo "workdir_path: $_workdir/"
-            echo "relPath: $relPath"
-            echo "grepstr: $grepstr"
-debugTools
-            if $_file
+            
+            fileFiltering "$fpath"
+            if [[ $? -eq 0 ]]
             then
-                if [[ "$grepstr" == "$relPath/" ]] || [[ "$grepstr" == "$fpath" ]]
-                then
-                    echo "$fname ignored"
-                    continue
-                fi
+                continue
             fi
+            
             backUp "$fpath" "$backupdir/$fname"
             continue
         fi
@@ -90,24 +109,13 @@ debugTools
             then
                 continue
             fi
-
             
-            relPath=${fpath##$_workdir/} 
-            grepstr=$(grep -i -E "^($_workdir)?/?$relPath$" "$_tfile")
-<<debugTools
-            echo "workdir_path: $_workdir/"
-            echo "relPath: $relPath"
-            echo "grepstr: $grepstr"
-
-debugTools
-            if $_file
+            fileFiltering "$fpath"
+            if [[ $? -eq 0 ]]
             then
-                if [[ "$grepstr" == "$relPath" ]] || [[ "$grepstr" == "$fpath" ]]
-                then
-                    echo "$fname ignored"
-                    continue
-                fi
+                continue
             fi
+
             cpHelper "$fpath" "$backupdir/$fname"
             
         elif [[ "$fpath" -ot "$backupdir/$fname" ]]
