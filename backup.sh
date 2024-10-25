@@ -71,9 +71,6 @@ backUp() {
 
     local workdir="$1"
     local backupdir="$2"
-
-
-
     #Create backupDir if needed
     if [[ ! -d "$backupdir" ]]
     then
