@@ -63,6 +63,22 @@ backUp() {
         
         if [[ -d "$fpath" ]]
         then
+
+            relPath=${fpath##$_workdir/} 
+            grepstr=$(grep -i -E "^($_workdir)?/?$relPath/?$" "$_tfile")
+<<debugTools
+            echo "workdir_path: $_workdir/"
+            echo "relPath: $relPath"
+            echo "grepstr: $grepstr"
+debugTools
+            if $_file
+            then
+                if [[ "$grepstr" == "$relPath/" ]] || [[ "$grepstr" == "$fpath" ]]
+                then
+                    echo "$fname ignored"
+                    continue
+                fi
+            fi
             backUp "$fpath" "$backupdir/$fname"
             continue
         fi
