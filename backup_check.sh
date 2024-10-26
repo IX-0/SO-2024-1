@@ -48,9 +48,9 @@ backupCheck() {
     done
 }
 
-while getotps ":h" flag
+while getopts ":h" flag
 do 
-    case $flag
+    case $flag in
         h)
             _help=true
             ;;
