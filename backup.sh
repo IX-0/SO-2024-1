@@ -40,30 +40,25 @@ rmHelper(){
 }
 
 fileFiltering(){
-    if $_file
-    then
-        fpath=$1
-        relPath=${fpath##$_workdir/} #passar fpath
-        grepstr=$(grep -i -E "^($_workdir)?/?$relPath/?$" "$_tfile")
-        echo "workdir_path: $_workdir/"
-        echo "relPath: $relPath"
-        echo "grepstr: $grepstr"
+    fpath=$1
+    relPath=${fpath##$_workdir/} #passar fpath
+    grepstr="$(grep -i -E "^($_workdir)?/?$relPath/?$" "$_tfile")"
+    echo "workdir_path: $_workdir/"
+    echo "relPath: $relPath"
+    echo -e "grepstr: $grepstr\n"
 
-        if [[ "$grepstr" =~ ^$relPath/?$ ]] || [[ "$grepstr" == "$fpath" ]]
+    if [[ "$grepstr" =~ ^$relPath/?$ ]] || [[ "$grepstr" == "$fpath" ]]
+    then
+        if [[ -d "$fpath" ]]
         then
-            if [[ -d "$fpath" ]]
-            then
-                echo "$fpath ignored"
-                return 0
-            fi
-            fname=$(basename "")    
-            echo "$fname ignored"
+            echo "$fpath ignored"
             return 0
         fi
-        return 1
+        fname=$(basename "")    
+        echo "$fname ignored"
+        return 0
     fi
     return 1
-
 }
 
 
@@ -79,7 +74,7 @@ backUp() {
 
     for fpath in "$workdir"/*
     do
-        fname=$(basename "$fpath")
+        local fname=$(basename "$fpath")
 
         if [[ "$fname" == "*" ]]
         then
@@ -89,7 +84,7 @@ backUp() {
         if [[ -d "$fpath" ]]
         then
             
-            fileFiltering "$fpath"
+            $_file && fileFiltering "$fpath"
             if [[ $? -eq 0 ]]
             then
                 continue
@@ -101,16 +96,17 @@ backUp() {
 
         if [[ ! -f "$backupdir/$fname" ]] || [[ "$fpath" -nt "$backupdir/$fname" ]]
         then
-            #Check for regex
-            if $_regex && [[ ! "$fname" =~ $_regexpr ]]
+
+            $_regex && [[ ! "$fname" =~ $_regexpr ]]
+            if [[ $? -eq 0 ]]             
             then
                 continue
             fi
             
-            fileFiltering "$fpath"
+            $_file && fileFiltering "$fpath"
             if [[ $? -eq 0 ]]
             then
-                continue
+                continue 
             fi
 
             cpHelper "$fpath" "$backupdir/$fname"
@@ -208,7 +204,7 @@ fi
 #Check for the existence of the workDir
 if [[ ! -d "$1" ]]
 then
-    echo "Bad argument: '$1' is not a directory"
+    echo "Bad argument: '$1' is not a directory or doesn't exist"
     exit 1
 fi
 
