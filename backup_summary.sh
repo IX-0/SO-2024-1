@@ -2,6 +2,7 @@
 
 #Ensure LOCALE is set to C for compatibility
 export LC_ALL=C
+shopt -s dotglob
 
 #Vars
 _checking=false
