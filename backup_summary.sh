@@ -18,6 +18,13 @@ function summaryAdd() {
     summary[$key]=$(( summary[$key] + $amount ))
 }
 
+function printSummary() {
+    echo -n "-> While backing up $(basename $_workdir)${workdir##$_workdir}:"
+    echo -n " ${summary[errors]} errors; ${summary[warnings]} warnings;"
+    echo -n " ${summary[num_updated]} updated;"
+    echo -e " ${summary[num_copied]} copied (${summary[size_copied]}B); ${summary[num_removed]} removed (${summary[size_removed]}B)\n"
+}
+
 #Helper functions for use of _checking
 function cpHelper(){
     echo "cp -a $(basename $_workdir)${1##$_workdir} $(basename $_backupdir)${2##$_backupdir}"
@@ -69,17 +76,17 @@ function rmHelper(){
 
 function fileFiltering(){
     fpath=$1
-    relPath=${fpath##$_workdir/} #passar fpath
-    grepstr="$(grep -i -E "^($_workdir)?/?$relPath/?$" "$_tfile")"
-    
-    if [[ "$grepstr" =~ ^$relPath/?$ ]] || [[ "$grepstr" == "$fpath" ]]
+    if [[ -d "$fpath" ]]
     then
-        if [[ -d "$fpath" ]]
-        then
-            echo "$fpath ignored"
-            return 0
-        fi
-        fname=$(basename "")    
+        return 1
+    fi
+        
+    relPath=${fpath##$_workdir/} #passar fpath
+    grepstr="$(grep -i -E "^($_workdir)?/?$relPath$" "$_tfile")"
+    if [[ "$grepstr" == "$relPath" ]] || [[ "$grepstr" == "$fpath" ]]
+    then
+
+        fname=$(basename "$fpath")    
         echo "$fname ignored"
         return 0
     fi
@@ -132,10 +139,9 @@ function backUp() {
         [[ ! -e "$workdir/$fname" ]] && rmHelper "$fpath"
     done
 
-    echo -n "-> While backing up $(basename $_workdir)${workdir##$_workdir}:"
-    echo -n " ${summary[errors]} Errors; ${summary[warnings]} Warnings;"
-    echo -n " ${summary[num_updated]} Updated;"
-    echo -e " ${summary[num_copied]} Copied (${summary[size_copied]}B); ${summary[num_removed]} Removed (${summary[size_removed]}B)\n"
+    $_checking || printSummary
+
+    return 0
 }
 
 #Argument and flag parsing
