@@ -41,25 +41,22 @@ rmHelper(){
 
 fileFiltering(){
     fpath=$1
-    relPath=${fpath##$_workdir/} #passar fpath
-    grepstr="$(grep -i -E "^($_workdir)?/?$relPath/?$" "$_tfile")"
-    echo "workdir_path: $_workdir/"
-    echo "relPath: $relPath"
-    echo -e "grepstr: $grepstr\n"
-
-    if [[ "$grepstr" =~ ^$relPath/?$ ]] || [[ "$grepstr" == "$fpath" ]]
+    if [[ -d "$fpath" ]]
     then
-        if [[ -d "$fpath" ]]
-        then
-            echo "$fpath ignored"
-            return 0
-        fi
-        fname=$(basename "")    
+        return 1
+    fi
+        
+    relPath=${fpath##$_workdir/} #passar fpath
+    grepstr="$(grep -i -E "^($_workdir)?/?$relPath$" "$_tfile")"
+    if [[ "$grepstr" == "$relPath" ]] || [[ "$grepstr" == "$fpath" ]]
+    then
+
+        fname=$(basename "$fpath")    
         echo "$fname ignored"
         return 0
     fi
     return 1
-}
+    }
 
 
 backUp() {
