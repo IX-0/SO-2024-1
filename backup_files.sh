@@ -12,7 +12,7 @@ _backupdir=""
 
 #Helper functions for use of _checking
 function cpHelper(){
-    echo "cp -a $1 $2"
+    echo "cp -a $(basename $_workdir)${1##$_workdir} $(basename $_backupdir)${2##$_backupdir}"
     if ! $_checking 
     then
         cp -a "$1" "$2"
@@ -20,7 +20,7 @@ function cpHelper(){
 }
 
 function mkdirHelper(){
-    echo "mkdir $1"
+    echo "mkdir $(basename $_backupdir)${1##$_backupdir}"
     if ! $_checking 
     then
         mkdir "$1"
@@ -28,7 +28,7 @@ function mkdirHelper(){
 }
 
 function rmHelper(){
-    echo "rm $1"
+    echo "rm -r ${1##$_backupdir}"
     if ! $_checking
     then
         rm "$1"
@@ -65,23 +65,23 @@ then
 fi
 
 #Resolve full paths
-workdir=$(realpath "$1")
-backupdir=$(realpath "$2")
+_workdir=$(realpath "$1")
+_backupdir=$(realpath "$2")
 
 #Check if backupDir is a subdirectory of workingDir
-if [[  "${backupdir##$workdir}" != "$backupdir" ]]
+if [[  "${_backupdir##$_workdir}" != "$_backupdir" ]]
 then
     echo "Error: Backup directory is a sub-directory of working directory"
     exit 1
 fi
 
 #Create backupDir if needed
-if [[ ! -d "$backupdir" ]]
+if [[ ! -d "$_backupdir" ]]
 then
-    mkdirHelper $backupdir
+    mkdirHelper $_backupdir
 fi
 
-for fpath in "$workdir"/*
+for fpath in "$_workdir"/*
 do
     fname=$(basename "$fpath")
     if [[ ! -f "$fpath" ]]
@@ -89,19 +89,19 @@ do
         continue
     fi
 
-    if [[ ! -f "$backupdir/$fname" ]] || [[ "$fpath" -nt "$backupdir/$fname" ]]
+    if [[ ! -f "$_backupdir/$fname" ]] || [[ "$fpath" -nt "$_backupdir/$fname" ]]
     then
-        cpHelper "$fpath" "$backupdir/$fname"    
-    elif [[ "$fpath" -ot "$backupdir/$fname" ]]
+        cpHelper "$fpath" "$_backupdir/$fname"    
+    elif [[ "$fpath" -ot "$_backupdir/$fname" ]]
     then
         echo "WARNING"
     fi
 done
 
-for fpath in "$backupdir"/*
+for fpath in "$_backupdir"/*
 do
     fname=$(basename "$fpath")
-    if [[ ! -f "$workdir/$fname" ]]
+    if [[ ! -f "$_workdir/$fname" ]]
     then 
         rmHelper "$fpath"
     fi

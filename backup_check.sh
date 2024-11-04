@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #compatibility opts
-export LC_ALL=c
+export LC_ALL=C
 shopt -s dotglob
 
 #Vars

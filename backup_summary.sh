@@ -23,7 +23,7 @@ function printSummary() {
     echo -n "-> While backing up $(basename $_workdir)${workdir##$_workdir}:"
     echo -n " ${summary[errors]} errors; ${summary[warnings]} warnings;"
     echo -n " ${summary[num_updated]} updated;"
-    echo -e " ${summary[num_copied]} copied (${summary[size_copied]}B); ${summary[num_removed]} removed (${summary[size_removed]}B)\n"
+    echo " ${summary[num_copied]} copied (${summary[size_copied]}B); ${summary[num_removed]} removed (${summary[size_removed]}B)"
 }
 
 #Helper functions for use of _checking
@@ -88,7 +88,6 @@ function fileFiltering() {
     then
 
         fname=$(basename "$fpath")    
-        echo "$fname ignored"
         return 0
     fi
     return 1
@@ -120,7 +119,7 @@ function backUp() {
             
             $_regex && [[ ! "$fname" =~ $_regexpr ]] && continue
             
-            $_file && fileFiltering "$fpath" && continue
+            $_file && fileFiltering "$fpath" &&  echo "$fpath ignored" && continue
             
             cpHelper "$fpath" "$backupdir/$fname"
             

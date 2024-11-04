@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #compatibility opts
-export LC_ALL=c
+export LC_ALL=C
 shopt -s dotglob
 
 #Vars
@@ -14,7 +14,7 @@ _backupdir=""
 
 #Helper functions for use of _checking
 function cpHelper() {
-    echo "cp -a $1 $2"
+    echo "cp -a $(basename $_workdir)${1##$_workdir} $(basename $_backupdir)${2##$_backupdir}"
     if ! $_checking 
     then
         cp -a "$1" "$2"
@@ -22,7 +22,7 @@ function cpHelper() {
 }
 
 function mkdirHelper() {
-    echo "mkdir $1"
+    echo "mkdir $(basename $_backupdir)${1##$_backupdir}"
     if ! $_checking 
     then
         mkdir "$1"
@@ -30,7 +30,7 @@ function mkdirHelper() {
 }
 
 function rmHelper() {
-    echo "rm -r $1"
+    echo "rm -r ${1##$_backupdir}"
     if ! $_checking
     then
         rm -r "$1"
@@ -50,7 +50,6 @@ function fileFiltering() {
     then
 
         fname=$(basename "$fpath")    
-        echo "$fname ignored"
         return 0
     fi
     return 1
@@ -101,6 +100,7 @@ function backUp() {
             $_file && fileFiltering "$fpath"
             if [[ $? -eq 0 ]]
             then
+                echo "$fpath ignored"
                 continue 
             fi
 
@@ -132,23 +132,18 @@ while getopts ":chb:r:" flag
 do 
     case $flag in
         c) 
-            _checking=true 
-            ;;
+            _checking=true;;
         h) 
-            _help=true 
-            ;;
+            _help=true;;
         b)  
             _tfile=$OPTARG
-            _file=true 
-            ;;
+            _file=true;;
         r)
             _regexpr=$OPTARG
-            _regex=true
-            ;;
+            _regex=true;;
         ?)
             echo "Invalid option -$OPTARG: aborting backup"
-            exit 1 
-            ;;
+            exit 1;;
     esac
 done
 
