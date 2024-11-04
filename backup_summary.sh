@@ -1,7 +1,8 @@
 #!/bin/bash
 
-#Ensure LOCALE is set to C for compatibility
+#Compatibility opts
 export LC_ALL=C
+shopt -s dotglob
 
 #Vars
 _checking=false
@@ -26,7 +27,7 @@ function printSummary() {
 }
 
 #Helper functions for use of _checking
-function cpHelper(){
+function cpHelper() {
     echo "cp -a $(basename $_workdir)${1##$_workdir} $(basename $_backupdir)${2##$_backupdir}"
     
     local size=$(stat -c %s "$1")
@@ -48,7 +49,7 @@ function cpHelper(){
     return 0
 }
 
-function mkdirHelper(){
+function mkdirHelper() {
     echo "mkdir $(basename $_backupdir)${1##$_backupdir}"
     $_checking || mkdir "$1"
     if [[ $? -ne 0 ]] 
@@ -59,7 +60,7 @@ function mkdirHelper(){
     return 0
 }
 
-function rmHelper(){
+function rmHelper() {
     echo "rm -r ${1##$_backupdir}"
     local size=$(stat -c %s "$1")
     $_checking || rm -r "$1" 
@@ -74,7 +75,7 @@ function rmHelper(){
     return 0
 }
 
-function fileFiltering(){
+function fileFiltering() {
     fpath=$1
     if [[ -d "$fpath" ]]
     then

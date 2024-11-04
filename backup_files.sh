@@ -1,39 +1,37 @@
 #!/bin/bash     
 
-#Ensure LOCALE is set to C for compatibility
+#Compatibility opts
 export LC_ALL=C
+shopt -s dotglob
 
 #Vars
 _checking=false
 _help=false
-_workdir=
-_backupdir=
+_workdir=""
+_backupdir=""
 
 #Helper functions for use of _checking
-cpHelper(){
+function cpHelper(){
     echo "cp -a $1 $2"
     if ! $_checking 
     then
         cp -a "$1" "$2"
-        return $?
     fi
 }
 
-mkdirHelper(){
+function mkdirHelper(){
     echo "mkdir $1"
     if ! $_checking 
     then
         mkdir "$1"
-        return $?
     fi
 }
 
-rmHelper(){
+function rmHelper(){
     echo "rm $1"
     if ! $_checking
     then
         rm "$1"
-        return $?
     fi
 }
 

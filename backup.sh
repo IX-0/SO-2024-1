@@ -1,45 +1,43 @@
 #!/bin/bash
 
-#Ensure LOCALE is set to C for compatibility
-export LC_ALL=C
+#compatibility opts
+export lc_all=c
+shopt -s dotglob
 
 #Vars
 _checking=false
 _help=false
 _regex=false
 _file=false
-_workdir=
-_backupdir=
+_workdir=""
+_backupdir=""
 
 #Helper functions for use of _checking
-cpHelper(){
+function cpHelper() {
     echo "cp -a $1 $2"
     if ! $_checking 
     then
         cp -a "$1" "$2"
-        return $?
     fi
 }
 
-mkdirHelper(){
+function mkdirHelper() {
     echo "mkdir $1"
     if ! $_checking 
     then
         mkdir "$1"
-        return $?
     fi
 }
 
-rmHelper(){
+function rmHelper() {
     echo "rm -r $1"
     if ! $_checking
     then
         rm -r "$1"
-        return $?
     fi
 }
 
-fileFiltering(){
+function fileFiltering() {
     fpath=$1
     if [[ -d "$fpath" ]]
     then
@@ -56,10 +54,10 @@ fileFiltering(){
         return 0
     fi
     return 1
-    }
+}
 
 
-backUp() {
+function backUp() {
 
     local workdir="$1"
     local backupdir="$2"

@@ -1,14 +1,15 @@
 #!/bin/bash
 
-#Ensure LOCALE is set to C for compatibility
-export LC_ALL=C
+#compatibility opts
+export lc_all=c
+shopt -s dotglob
 
 #Vars
 _help=false
-_workdir=
-_backupdir=
+_workdir=""
+_backupdir=""
 
-compareFiles() {
+function compareFiles() {
     #Returns 0 if contents are equal, 1 if not
     #Using md5sum
 
@@ -21,7 +22,7 @@ compareFiles() {
     return 1
 }
 
-backupCheck() {
+function backupCheck() {
     local workdir="$1"
     local backupdir="$2"
 
@@ -29,21 +30,20 @@ backupCheck() {
     do
         fname=$(basename "$fpath")
 
-        if [[ "$fname" == "*" ]]
-        then
-            break
-        fi
+        [[ "$fname" == "*" ]] && break
 
-        if [[ -d "$fpath" ]]
+        [[ -d "$fpath" ]] && backupCheck "$fpath" "$backupdir/$fname" && continue
+        
+        if [[ ! -f "$backupdir/$fname" ]] 
         then
-            backupCheck "$fpath" "$backupdir/$fname"
+            echo "${backupdir##$_backupdir}/$fname doesn't exist"
             continue
         fi
-        
+    
         compareFiles "$fpath" "$backupdir/$fname"
-        if [[ $? -eq 1 ]]
+        if [[ ! $? -eq 0 ]]
         then
-            echo ${fpath##$_workdir} ${backupdir##$_backupdir}/$fname differ 
+            echo "${fpath##$_workdir} ${backupdir##$_backupdir}/$fname differ" 
         fi
     done
 }
