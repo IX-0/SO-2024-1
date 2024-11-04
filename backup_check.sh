@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #compatibility opts
-export lc_all=c
+export LC_ALL=c
 shopt -s dotglob
 
 #Vars
@@ -10,7 +10,7 @@ _workdir=""
 _backupdir=""
 
 function compareFiles() {
-    #Returns 0 if contents are equal, 1 if not
+#Returns 0 if contents are equal, 1 if not
     #Using md5sum
 
     sum1=($(md5sum "$1")) #Transformar num array e aceder ao primeiro indice

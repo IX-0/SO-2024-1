@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #compatibility opts
-export lc_all=c
+export LC_ALL=c
 shopt -s dotglob
 
 #Vars
@@ -150,7 +150,6 @@ do
             exit 1 
             ;;
     esac
-    _flags="$_flags -$flag $OPTARG"
 done
 
 #Strip flags and argument flags from argument list
