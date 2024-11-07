@@ -10,11 +10,12 @@ _workdir=""
 _backupdir=""
 
 function compareFiles() {
-#Returns 0 if contents are equal, 1 if not
+    #Returns 0 if contents are equal, 1 if not
     #Using md5sum
+    #Output of md5sum: "checksum fname"
+    #Transform output in to an array and compare first element (checksum)
 
-    sum1=($(md5sum "$1")) #Transformar num array e aceder ao primeiro indice
-    sum2=($(md5sum "$2")) # (checksum filename)
+    sum1=($(md5sum "$1")); sum2=($(md5sum "$2"))
     if [[ "${sum1[0]}" == "${sum2[0]}" ]] 
     then
         return 0

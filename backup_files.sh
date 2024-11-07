@@ -1,7 +1,9 @@
 #!/bin/bash     
 
-#Compatibility opts
+#Ensures locale is set to C standard
 export LC_ALL=C
+
+#Globing now includes "dot files"
 shopt -s dotglob
 
 #Vars
@@ -81,6 +83,7 @@ then
     mkdirHelper $_backupdir
 fi
 
+#Copy/Update
 for fpath in "$_workdir"/*
 do
     fname=$(basename "$fpath")
@@ -98,6 +101,7 @@ do
     fi
 done
 
+#Remove files not in workdir
 for fpath in "$_backupdir"/*
 do
     fname=$(basename "$fpath")

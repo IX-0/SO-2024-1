@@ -1,7 +1,9 @@
 #!/bin/bash
 
-#Compatibility opts
+#Ensures locale is set to C standard
 export LC_ALL=C
+
+#Globing now includes "dot files"
 shopt -s dotglob
 
 #Vars
@@ -12,10 +14,10 @@ _file=false
 _workdir=""
 _backupdir=""
 
+# usage: summaryAdd key amount
 function summaryAdd() {
-    # summaryAdd key amount
-    #   adds amount to key in summary dic
-    key=$1; amount=$2
+    # adds amount to key in summary dic
+    local key=$1; local amount=$2
     summary[$key]=$(( summary[$key] + $amount ))
 }
 
@@ -26,7 +28,6 @@ function printSummary() {
     echo " ${summary[num_copied]} copied (${summary[size_copied]}B); ${summary[num_removed]} removed (${summary[size_removed]}B)"
 }
 
-#Helper functions for use of _checking
 function cpHelper() {
     echo "cp -a $(basename $_workdir)${1##$_workdir} $(basename $_backupdir)${2##$_backupdir}"
     
@@ -52,6 +53,7 @@ function cpHelper() {
 function mkdirHelper() {
     echo "mkdir $(basename $_backupdir)${1##$_backupdir}"
     $_checking || mkdir "$1"
+    
     if [[ $? -ne 0 ]] 
     then
         summaryAdd errors 1   
@@ -76,19 +78,17 @@ function rmHelper() {
 }
 
 function fileFiltering() {
-    fpath=$1
+    local fpath=$1
     if [[ -d "$fpath" ]]
     then
         return 1
     fi
-        
-    relPath=${fpath##$_workdir/} #passar fpath
-    grepstr="$(grep -i -E "^($_workdir)?/?$relPath$" "$_tfile")"
+    
+    local relPath=${fpath##$_workdir/}
+    local grepstr="$(grep -i -E "^($_workdir)?/?$relPath$" "$_tfile")"
     if [[ "$grepstr" == "$relPath" ]] || [[ "$grepstr" == "$fpath" ]]
     then
-
-        fname=$(basename "$fpath")    
-        return 0
+         return 0
     fi
     return 1
 }
@@ -99,16 +99,18 @@ function backUp() {
     local workdir="$1"
     local backupdir="$2"
 
-    #summary dic
+    #Local summary dic, can be accessed by functions called here
     local -A summary=(['errors']=0 ['warnings']=0 ['num_updated']=0 ['num_copied']=0 ['num_removed']=0 ['size_removed']=0 ['size_copied']=0)
 
     #Create backupDir if needed
     [[ ! -d "$backupdir" ]] && mkdirHelper "$backupdir"
-
+    
+    #Copy/Update
     for fpath in "$workdir"/*
     do
         local fname=$(basename "$fpath")
         
+        #Check if directory is not empty
         [[ "$fname" == "*" ]] && break
         
         if [[ -d "$fpath" ]]
@@ -116,20 +118,24 @@ function backUp() {
             backUp "$fpath" "$backupdir/$fname" 
         elif [[ ! -f "$backupdir/$fname" ]] || [[ "$fpath" -nt "$backupdir/$fname" ]]
         then
-            
+             
             $_regex && [[ ! "$fname" =~ $_regexpr ]] && continue
             
-            $_file && fileFiltering "$fpath" &&  echo "$fpath ignored" && continue
-            
+            $_file && fileFiltering "$fpath" && {
+                echo "$fpath ignored";
+                continue;
+            }             
+
             cpHelper "$fpath" "$backupdir/$fname"
             
         elif [[ "$fpath" -ot "$backupdir/$fname" ]]
         then
             summaryAdd warnings 1 
-            echo "WARNING: smthing wrong happened"
+            echo "WARNING: file in workdir older than the one in backupdir"
         fi
     done
-
+    
+    #Remove files not in workdir
     for fpath in "$backupdir"/* 
     do
         fname=$(basename "$fpath")
@@ -174,7 +180,7 @@ shift $(($OPTIND - 1))
 
 if $_help
 then
-    echo "Usage: [-c] [-b tfile] [-r regexpr] workingDir backupDir"
+    echo "Usage: $1 [-c] [-b tfile] [-r regexpr] workingDir backupDir"
     exit 0
 fi
 
@@ -190,7 +196,9 @@ fi
 if $_regex
 then
     #Using grep as a pattern validator
-    echo "" | grep -P "$_regexpr" 2>/dev/null
+    #If grep has a bad regular expression exit code should be 2
+    echo "2005" | grep -P "$_regexpr" 2>/dev/null
+
     if [[ $? -eq 2 ]]
     then
         echo "Bad argument for -r: '$_regexpr' isn't a valid regex expression"
