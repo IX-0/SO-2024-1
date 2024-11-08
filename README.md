@@ -2,7 +2,7 @@
 Projeto realizado no âmbito da cadeira de Sistemas Operativos.
 
 ### Objetivos:
-Desenvolver um script que permita criar e atualizar uma cópia de segurança de uma diretoria de trabalho em outra diretoria, que pode corresponder a um outro dispositivo (pen usb, disco externo, etc), denominada de backup.
+Desenvolver scripts que permitam criar e atualizar uma cópia de segurança de uma diretoria de trabalho em outra diretoria, que pode corresponder a um outro dispositivo (pen usb, disco externo, etc), denominada de backup.
 
 ### Conteudo:
 
