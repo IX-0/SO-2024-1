@@ -21,10 +21,12 @@ function checkSpace() {
     #resolve mount point
     mntPoint=$(stat -c %m "$dstDir")
     
-    freeBlks=( $(df --output=avail "$mntPoint") )
+    #output from df: "Avail 'num of free blks'"
+    freeBlks=( $(df --output=avail "$mntPoint") ) #tranform output into an array to ignore first elem later
     freeBytes=$(( "${freeBlks[1]}" * 1024 ))
 
-    neededBlks=( $(du -s "$srcDir") )
+    #output from df: "'num of used blks' 'dir_name'"
+    neededBlks=( $(du -s "$srcDir") ) #used same technique to retrive freeBlks
     neededBytes=$(( "${neededBlks[0]}" * 1024 ))
 
     [[ $neededBytes -lt $freeBytes ]] && return 0 || return 1
