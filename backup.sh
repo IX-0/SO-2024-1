@@ -1,7 +1,9 @@
 #!/bin/bash
 
-#compatibility opts
+#Ensures locale is set to C standard
 export LC_ALL=C
+
+#Globing now includes "dot files"
 shopt -s dotglob
 
 #Vars
@@ -17,7 +19,8 @@ function cpHelper() {
     echo "cp -a $(basename $_workdir)${1##$_workdir} $(basename $_backupdir)${2##$_backupdir}"
     if ! $_checking 
     then
-        cp -a "$1" "$2"
+        cp -a "$1" "$2" &>/dev/null
+        [[ ! $? -eq 0 ]] && echo "Error copying file $"
     fi
 }
 
@@ -25,7 +28,7 @@ function mkdirHelper() {
     echo "mkdir $(basename $_backupdir)${1##$_backupdir}"
     if ! $_checking 
     then
-        mkdir "$1"
+        mkdir "$1" &>/dev/null
     fi
 }
 
@@ -33,7 +36,7 @@ function rmHelper() {
     echo "rm -r ${1##$_backupdir}"
     if ! $_checking
     then
-        rm -r "$1"
+        rm -r "$1" &>/dev/null
     fi
 }
 
@@ -147,7 +150,7 @@ do
     esac
 done
 
-#Strip flags and argument flags from argument list
+#Strip flags and flag arguments from argument list
 shift $(($OPTIND - 1))
 
 if $_help
@@ -168,7 +171,7 @@ fi
 if $_regex
 then
     #Using grep as a pattern validator
-    echo "" | grep -P "$_regexpr" 2>/dev/null
+    echo "" | grep -P "$_regexpr" &>/dev/null
     if [[ $? -eq 2 ]]
     then
         echo "Bad argument for -r: '$_regexpr' isn't a valid regex expression"
@@ -180,12 +183,9 @@ fi
 if [[ $# -ne 2 ]]
 then
     case "$#" in
-        0) echo "Missing workdir argument"
-        ;;
-        1) echo "Missing backupdir argument"
-        ;;
-        *) echo "Too many arguments"
-        ;;
+        0) echo "Missing workdir argument" ;;
+        1) echo "Missing backupdir argument" ;;
+        *) echo "Too many arguments" ;;
     esac
     exit 1
 fi
@@ -207,6 +207,9 @@ then
     echo "Error: Backup directory is a sub-directory of working directory"
     exit 1
 fi
+
+#Create backupDir if needed
+[[ ! -d "$_backupdir" ]] && mkdirHelper "$_backupdir"
 
 backUp "$_workdir" "$_backupdir"
 echo BACKUP DONE

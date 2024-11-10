@@ -1,7 +1,9 @@
 #!/bin/bash
 
-#compatibility opts
+#Ensures locale is set to C standard
 export LC_ALL=C
+
+#Globing now includes "dot files"
 shopt -s dotglob
 
 #Vars
@@ -53,15 +55,14 @@ while getopts ":h" flag
 do 
     case $flag in
         h)
-            _help=true
-            ;;
+            _help=true ;;
         *)
             echo "Unsuported flag -$flag: quitting backup_check.sh"
-            exit 1
-            ;;
+            exit 1 ;;
     esac
 done
 
+#Strip flags and flag arguments from argument list
 shift $(($OPTIND - 1))
 
 if $_help
@@ -94,3 +95,5 @@ _backupdir=$(realpath "$2")
 
 backupCheck "$_workdir" "$_backupdir"
 echo DONE
+
+exit 0 #Made with love by Igor Baltarejo & Gonçalo Almeida

@@ -14,6 +14,22 @@ _file=false
 _workdir=""
 _backupdir=""
 
+# usage: checkSpace srcDir dstDir
+function checkSpace() {
+    dstDir="$2"; srcDir="$1"
+
+    #resolve mount point
+    mntPoint=$(stat -c %m "$dstDir")
+    
+    freeBlks=( $(df --output=avail "$mntPoint") )
+    freeBytes=$(( "${freeBlks[1]}" * 1024 ))
+
+    neededBlks=( $(du -s "$srcDir") )
+    neededBytes=$(( "${neededBlks[0]}" * 1024 ))
+
+    [[ $neededBytes -lt $freeBytes ]] && return 0 || return 1
+}
+
 # usage: summaryAdd key amount
 function summaryAdd() {
     # adds amount to key in summary dic
@@ -155,27 +171,22 @@ while getopts ":chb:r:" flag
 do 
     case $flag in
         c) 
-            _checking=true 
-            ;;
+            _checking=true ;;
         h) 
-            _help=true 
-            ;;
+            _help=true ;;
         b)  
             _tfile=$OPTARG
-            _file=true 
-            ;;
+            _file=true ;;
         r)
             _regexpr=$OPTARG
-            _regex=true
-            ;;
+            _regex=true ;;
         ?)
             echo "Invalid option -$OPTARG: aborting backup"
-            exit 1 
-            ;;
+            exit 1 ;;
     esac
 done
 
-#Strip flags and argument flags from argument list
+#Strip flags and flag arguments from argument list
 shift $(($OPTIND - 1))
 
 if $_help
@@ -197,7 +208,7 @@ if $_regex
 then
     #Using grep as a pattern validator
     #If grep has a bad regular expression exit code should be 2
-    echo "2005" | grep -P "$_regexpr" 2>/dev/null
+    echo "2005" | grep -P "$_regexpr" &>/dev/null
 
     if [[ $? -eq 2 ]]
     then
@@ -210,12 +221,9 @@ fi
 if [[ $# -ne 2 ]]
 then
     case "$#" in
-        0) echo "Missing workdir argument"
-        ;;
-        1) echo "Missing backupdir argument"
-        ;;
-        *) echo "Too many arguments"
-        ;;
+        0) echo "Missing workdir argument" ;;
+        1) echo "Missing backupdir argument" ;;
+        *) echo "Too many arguments" ;;
     esac
     exit 1
 fi
@@ -236,6 +244,16 @@ if [[  "${_backupdir##$_workdir}" != "$_backupdir" ]]
 then
     echo "Error: Backup directory is a sub-directory of working directory"
     exit 1
+fi
+
+#Create backupDir if needed
+[[ ! -d "$_backupdir" ]] && mkdirHelper "$_backupdir"
+
+#Only check when doing the backup
+$_checking || checkSpace "$_workdir" "$_backupdir"
+if [[ $? -ne 0 ]]
+then
+    echo "Error: There is no available free space on mount point to make the full backup, aborting backup..."
 fi
 
 backUp "$_workdir" "$_backupdir"

@@ -51,7 +51,7 @@ do
     esac
 done
 
-#Strip flags and argument flags from argument list
+#Strip flags and flag arguments from argument list
 shift $(($OPTIND - 1))
 
 if $_help
