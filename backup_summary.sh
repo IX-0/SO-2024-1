@@ -81,7 +81,6 @@ function mkdirHelper() {
 }
 
 function rmHelper() {
-    echo "rm -r ${1##$_backupdir}"
     local size=$(stat -c %s "$1")
     $_checking || rm -r "$1" 
     if [[ $? -ne 0 ]]
@@ -183,7 +182,7 @@ do
             _regexpr=$OPTARG
             _regex=true ;;
         ?)
-            echo "Invalid option -$OPTARG: aborting backup"
+            echo "Invalid option -$flag: aborting backup"
             exit 1 ;;
     esac
 done

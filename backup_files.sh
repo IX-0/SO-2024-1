@@ -30,7 +30,6 @@ function mkdirHelper(){
 }
 
 function rmHelper(){
-    echo "rm -r ${1##$_backupdir}"
     if ! $_checking
     then
         rm "$1"
@@ -46,7 +45,7 @@ do
         h) 
             _help=true ;;
         ?)
-            echo "Invalid option -$OPTARG: aborting backup"
+            echo "Invalid option -$flag: aborting backup"
             exit 1 ;;
     esac
 done
@@ -62,7 +61,7 @@ fi
 
 if [[ ! -d "$1" ]]
 then
-    echo "no such work diretory to backup" 
+    echo "Dir '$1' does not exist: aborting backup" 
     exit 1
 fi
 

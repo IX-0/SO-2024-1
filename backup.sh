@@ -33,7 +33,6 @@ function mkdirHelper() {
 }
 
 function rmHelper() {
-    echo "rm -r ${1##$_backupdir}"
     if ! $_checking
     then
         rm -r "$1" &>/dev/null
@@ -145,7 +144,7 @@ do
             _regexpr=$OPTARG
             _regex=true;;
         ?)
-            echo "Invalid option -$OPTARG: aborting backup"
+            echo "Invalid option -$flag: aborting backup"
             exit 1;;
     esac
 done
@@ -159,13 +158,10 @@ then
     exit 0
 fi
 
-if $_file
+if $_file && [[ ! -f $_tfile ]]
 then
-    if [[ ! -f $_tfile ]]
-    then  
-        echo "Bad argument for -b: '$_tfile' is not a file or doesn't exist"
-        exit 1
-    fi
+    echo "Bad argument for -b: '$_tfile' is not a file or doesn't exist"
+    exit 1
 fi
 
 if $_regex
@@ -202,7 +198,7 @@ _workdir=$(realpath "$1")
 _backupdir=$(realpath "$2")
 
 #Check if backupDir is a subdirectory of workingDir
-if [[  "${backupdir##$workdir}" != "$backupdir" ]]
+if [[  "${_backupdir##$_workdir}" != "$_backupdir" ]]
 then
     echo "Error: Backup directory is a sub-directory of working directory"
     exit 1
