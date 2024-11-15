@@ -86,7 +86,11 @@ fi
 for fpath in "$_workdir"/*
 do
     fname=$(basename "$fpath")
-    if [[ ! -f "$fpath" ]]
+
+    #Check if directory is not empty
+    [[ "$fname" == "*" ]] && break
+
+    if [[ -d "$fpath" ]]
     then
         continue
     fi
@@ -96,7 +100,7 @@ do
         cpHelper "$fpath" "$_backupdir/$fname"    
     elif [[ "$fpath" -ot "$_backupdir/$fname" ]]
     then
-        echo "WARNING"
+        echo "WARNING: backup entry $(basename $_workdir)${fpath##$_workdir} is newer than $(basename $_backupdir)${2##$_backupdir}; Should not happen"
     fi
 done
 
@@ -104,6 +108,10 @@ done
 for fpath in "$_backupdir"/*
 do
     fname=$(basename "$fpath")
+
+    #Check if directory is not empty
+    [[ "$fname" == "*" ]] && break
+
     if [[ ! -f "$_workdir/$fname" ]]
     then 
         rmHelper "$fpath"

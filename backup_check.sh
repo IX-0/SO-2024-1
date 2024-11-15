@@ -46,7 +46,7 @@ function backupCheck() {
         compareFiles "$fpath" "$backupdir/$fname"
         if [[ ! $? -eq 0 ]]
         then
-            echo "${fpath##$_workdir} ${backupdir##$_backupdir}/$fname differ" 
+            echo "$(basename $_workdir)${fpath##$_workdir} $(basename $_backupdir)${backupdir##$_backupdir}/$fname differ" 
         fi
     done
 }

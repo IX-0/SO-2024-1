@@ -20,7 +20,7 @@ function cpHelper() {
     if ! $_checking 
     then
         cp -a "$1" "$2" &>/dev/null
-        [[ ! $? -eq 0 ]] && echo "Error copying file $"
+        return $?
     fi
 }
 
@@ -29,6 +29,7 @@ function mkdirHelper() {
     if ! $_checking 
     then
         mkdir "$1" &>/dev/null
+        return $?
     fi
 }
 
@@ -36,16 +37,12 @@ function rmHelper() {
     if ! $_checking
     then
         rm -r "$1" &>/dev/null
+        return $?
     fi
 }
 
 function fileFiltering() {
     local fpath=$1
-    if [[ -d "$fpath" ]]
-    then
-        return 1
-    fi
-        
     local relPath=${fpath##$_workdir/} #passar fpath
     local grepstr="$(grep -i -E "^($_workdir)?/?$relPath$" "$_tfile")"
     if [[ "$grepstr" == "$relPath" ]] || [[ "$grepstr" == "$fpath" ]]
@@ -61,47 +58,25 @@ function backUp() {
     local workdir="$1"
     local backupdir="$2"
     #Create backupDir if needed
-    if [[ ! -d "$backupdir" ]]
-    then
-        mkdirHelper "$backupdir"
-    fi
+    [[ ! -d "$backupdir" ]] && mkdirHelper "$backupdir" || return 1
 
     #Copy/Update
     for fpath in "$workdir"/*
     do
         local fname=$(basename "$fpath")
 
-        if [[ "$fname" == "*" ]]
-        then
-            break
-        fi
+        [[ "$fname" == "*" ]] && break
         
-        if [[ -d "$fpath" ]]
-        then
-            
-            $_file && fileFiltering "$fpath"
-            if [[ $? -eq 0 ]]
-            then
-                continue
-            fi
-            
-            backUp "$fpath" "$backupdir/$fname"
-            continue
-        fi
+        [[ -d "$fpath" ]] && backUp "$fpath" "$backupdir/$fname" && continue
 
         if [[ ! -f "$backupdir/$fname" ]] || [[ "$fpath" -nt "$backupdir/$fname" ]]
         then
 
-            $_regex && [[ ! "$fname" =~ $_regexpr ]]
-            if [[ $? -eq 0 ]]             
-            then
-                continue
-            fi
+            $_regex && [[ ! "$fname" =~ $_regexpr ]] && continue
             
-            $_file && fileFiltering "$fpath"
-            if [[ $? -eq 0 ]]
+            if $_file && fileFiltering "$fpath"
             then
-                echo "$fpath ignored"
+                echo "$(basename $_workdir)${fpath##$_workdir} ignored"
                 continue 
             fi
 
@@ -109,7 +84,7 @@ function backUp() {
             
         elif [[ "$fpath" -ot "$backupdir/$fname" ]]
         then
-            echo "WARNING"
+            echo "WARNING: backup entry $(basename $_workdir)${fpath##$_workdir} is newer than $(basename $_backupdir)${2##$_backupdir}; Should not happen"
         fi
     done
 
@@ -138,10 +113,10 @@ do
         h) 
             _help=true;;
         b)  
-            _tfile=$OPTARG
+            _tfile="$OPTARG"
             _file=true;;
         r)
-            _regexpr=$OPTARG
+            _regexpr="$OPTARG"
             _regex=true;;
         ?)
             echo "Invalid option -$flag: aborting backup"

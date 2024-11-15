@@ -14,24 +14,6 @@ _file=false
 _workdir=""
 _backupdir=""
 
-# usage: checkSpace srcDir dstDir
-function checkSpace() {
-    dstDir="$2"; srcDir="$1"
-
-    #resolve mount point
-    mntPoint=$(stat -c %m "$dstDir")
-    
-    #output from df: "Avail 'num of free blks'"
-    freeBlks=( $(df --output=avail "$mntPoint") ) #tranform output into an array to ignore first elem later
-    freeBytes=$(( "${freeBlks[1]}" * 1024 ))
-
-    #output from df: "'num of used blks' 'dir_name'"
-    neededBlks=( $(du -s "$srcDir") ) #used same technique to retrive freeBlks
-    neededBytes=$(( "${neededBlks[0]}" * 1024 ))
-
-    [[ $neededBytes -lt $freeBytes ]] && return 0 || return 1
-}
-
 # usage: summaryAdd key amount
 function summaryAdd() {
     # adds amount to key in summary dic
@@ -40,10 +22,10 @@ function summaryAdd() {
 }
 
 function printSummary() {
-    echo -n "-> While backing up $(basename $_workdir)${workdir##$_workdir}:"
-    echo -n " ${summary[errors]} errors; ${summary[warnings]} warnings;"
-    echo -n " ${summary[num_updated]} updated;"
-    echo " ${summary[num_copied]} copied (${summary[size_copied]}B); ${summary[num_removed]} removed (${summary[size_removed]}B)"
+    echo -n "While backing up $(basename $_workdir)${workdir##$_workdir}:"
+    echo -n " ${summary[errors]} Errors; ${summary[warnings]} Warnings;"
+    echo -n " ${summary[num_updated]} Updated;"
+    echo -e " ${summary[num_copied]} Copied (${summary[size_copied]}B); ${summary[num_removed]} Removed (${summary[size_removed]}B)\n"
 }
 
 function cpHelper() {
@@ -57,6 +39,7 @@ function cpHelper() {
 
     if [[ $? -ne 0 ]]
     then
+        echo "ERROR: couldn't copy $(basename $_workdir)${1##$_workdir}"
         summaryAdd errors 1
     else
         $updated && summaryAdd num_updated 1 || {
@@ -74,6 +57,7 @@ function mkdirHelper() {
     
     if [[ $? -ne 0 ]] 
     then
+        echo "ERROR: couldn't create directory $1"
         summaryAdd errors 1   
     fi
 
@@ -94,13 +78,8 @@ function rmHelper() {
     return 0
 }
 
-function fileFiltering() {
+function bFiltering() {
     local fpath=$1
-    if [[ -d "$fpath" ]]
-    then
-        return 1
-    fi
-    
     local relPath=${fpath##$_workdir/}
     local grepstr="$(grep -i -E "^($_workdir)?/?$relPath$" "$_tfile")"
     if [[ "$grepstr" == "$relPath" ]] || [[ "$grepstr" == "$fpath" ]]
@@ -109,7 +88,6 @@ function fileFiltering() {
     fi
     return 1
 }
-
 
 function backUp() {
 
@@ -121,7 +99,7 @@ function backUp() {
 
     #Create backupDir if needed
     [[ ! -d "$backupdir" ]] && mkdirHelper "$backupdir"
-    
+
     #Copy/Update
     for fpath in "$workdir"/*
     do
@@ -130,25 +108,25 @@ function backUp() {
         #Check if directory is not empty
         [[ "$fname" == "*" ]] && break
         
+        if $_file && bFiltering "$fpath"
+        then
+            echo "$(basename $_workdir)${fpath##$_workdir} ignored"
+            continue
+        fi
+
         if [[ -d "$fpath" ]]
         then
             backUp "$fpath" "$backupdir/$fname" 
         elif [[ ! -f "$backupdir/$fname" ]] || [[ "$fpath" -nt "$backupdir/$fname" ]]
         then
-             
-            $_regex && [[ ! "$fname" =~ $_regexpr ]] && continue
+            $_regex && [[ ! "$fname" =~ "$_regexpr" ]] && continue
             
-            $_file && fileFiltering "$fpath" && {
-                echo "$fpath ignored";
-                continue;
-            }             
-
             cpHelper "$fpath" "$backupdir/$fname"
             
         elif [[ "$fpath" -ot "$backupdir/$fname" ]]
         then
             summaryAdd warnings 1 
-            echo "WARNING: file in workdir older than the one in backupdir"
+            echo "WARNING: backup entry $(basename $_workdir)${fpath##$_workdir} is newer than $(basename $_backupdir)${2##$_backupdir}; Should not happen"
         fi
     done
     
@@ -162,8 +140,7 @@ function backUp() {
         [[ ! -e "$workdir/$fname" ]] && rmHelper "$fpath"
     done
 
-    $_checking || printSummary
-
+    printSummary
     return 0
 }
 
@@ -176,10 +153,10 @@ do
         h) 
             _help=true ;;
         b)  
-            _tfile=$OPTARG
+            _tfile="$OPTARG"
             _file=true ;;
         r)
-            _regexpr=$OPTARG
+            _regexpr="$OPTARG"
             _regex=true ;;
         ?)
             echo "Invalid option -$flag: aborting backup"
@@ -245,16 +222,6 @@ if [[  "${_backupdir##$_workdir}" != "$_backupdir" ]]
 then
     echo "Error: Backup directory is a sub-directory of working directory"
     exit 1
-fi
-
-#Create backupDir if needed
-[[ ! -d "$_backupdir" ]] && mkdirHelper "$_backupdir"
-
-#Only check when doing the backup
-$_checking || checkSpace "$_workdir" "$_backupdir"
-if [[ $? -ne 0 ]]
-then
-    echo "Error: There is no available free space on mount point to make the full backup, aborting backup..."
 fi
 
 backUp "$_workdir" "$_backupdir"

@@ -1,0 +1,5 @@
+script.bat
+.hiden.bat
+dir with spaces/subdir/.hiden.txt
+
+dir with spaces/subdir
