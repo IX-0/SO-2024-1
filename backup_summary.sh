@@ -35,7 +35,7 @@ function cpHelper() {
     local updated=false
     [[ "$1" -nt  "$2" && -f "$2" ]] && updated=true 
 
-    $_checking || cp -a "$1" "$2"
+    $_checking || cp -a "$1" "$2" &>/dev/null
 
     if [[ $? -ne 0 ]]
     then
@@ -53,11 +53,11 @@ function cpHelper() {
 
 function mkdirHelper() {
     echo "mkdir $(basename $_backupdir)${1##$_backupdir}"
-    $_checking || mkdir "$1"
+    $_checking || mkdir "$1" &>/dev/null
     
     if [[ $? -ne 0 ]] 
     then
-        echo "ERROR: couldn't create directory $1"
+        echo "ERROR: couldn't create directory $(basename $_backupdir)${1##$_backupdir}"
         summaryAdd errors 1   
     fi
 
@@ -66,7 +66,7 @@ function mkdirHelper() {
 
 function rmHelper() {
     local size=$(stat -c %s "$1")
-    $_checking || rm -r "$1" 
+    $_checking || rm -r "$1" &>/dev/null 
     if [[ $? -ne 0 ]]
     then
         summaryAdd errors 1
@@ -134,7 +134,6 @@ function backUp() {
     for fpath in "$backupdir"/* 
     do
         fname=$(basename "$fpath")
-        
         [[ "$fname" == "*" ]] && break
 
         [[ ! -e "$workdir/$fname" ]] && rmHelper "$fpath"

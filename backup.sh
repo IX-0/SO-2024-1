@@ -17,31 +17,35 @@ _backupdir=""
 #Helper functions for use of _checking
 function cpHelper() {
     echo "cp -a $(basename $_workdir)${1##$_workdir} $(basename $_backupdir)${2##$_backupdir}"
-    if ! $_checking 
+    $_checking || cp -a "$1" "$2" &>/dev/null
+
+    if [[ $? -ne 0 ]]
     then
-        cp -a "$1" "$2" &>/dev/null
-        return $?
+        echo "ERROR: couldn't copy $(basename $_workdir)${1##$_workdir}"
     fi
+
+    return 0
 }
 
 function mkdirHelper() {
     echo "mkdir $(basename $_backupdir)${1##$_backupdir}"
-    if ! $_checking 
+    $_checking || mkdir "$1" &>/dev/null
+    
+    if [[ $? -ne 0 ]] 
     then
-        mkdir "$1" &>/dev/null
-        return $?
+        echo "ERROR: couldn't create directory $(basename $_workdir)${1##$_workdir}"
     fi
+
+    return 0
 }
 
 function rmHelper() {
-    if ! $_checking
-    then
-        rm -r "$1" &>/dev/null
-        return $?
-    fi
+    $_checking || rm -r "$1" &>/dev/null
+
+    return 0
 }
 
-function fileFiltering() {
+function bFiltering() {
     local fpath=$1
     local relPath=${fpath##$_workdir/} #passar fpath
     local grepstr="$(grep -i -E "^($_workdir)?/?$relPath$" "$_tfile")"
@@ -58,28 +62,30 @@ function backUp() {
     local workdir="$1"
     local backupdir="$2"
     #Create backupDir if needed
-    [[ ! -d "$backupdir" ]] && mkdirHelper "$backupdir" || return 1
+    [[ ! -d "$backupdir" ]] && mkdirHelper "$backupdir" 
 
     #Copy/Update
     for fpath in "$workdir"/*
     do
         local fname=$(basename "$fpath")
 
+        #Check if directory is not empty
         [[ "$fname" == "*" ]] && break
         
-        [[ -d "$fpath" ]] && backUp "$fpath" "$backupdir/$fname" && continue
+        if $_file && bFiltering "$fpath"
+        then
+            echo "$(basename $_workdir)${fpath##$_workdir} ignored"
+            continue 
+        fi
 
-        if [[ ! -f "$backupdir/$fname" ]] || [[ "$fpath" -nt "$backupdir/$fname" ]]
+        if [[ -d "$fpath" ]] 
+        then
+            backUp "$fpath" "$backupdir/$fname"
+        elif [[ ! -f "$backupdir/$fname" ]] || [[ "$fpath" -nt "$backupdir/$fname" ]]
         then
 
             $_regex && [[ ! "$fname" =~ $_regexpr ]] && continue
             
-            if $_file && fileFiltering "$fpath"
-            then
-                echo "$(basename $_workdir)${fpath##$_workdir} ignored"
-                continue 
-            fi
-
             cpHelper "$fpath" "$backupdir/$fname"
             
         elif [[ "$fpath" -ot "$backupdir/$fname" ]]
@@ -92,15 +98,9 @@ function backUp() {
     for fpath in "$backupdir"/* 
     do
         fname=$(basename "$fpath")
-        if [[ "$fname" == "*" ]]
-        then
-            break
-        fi
+        [[ "$fname" == "*" ]] && break
 
-        if [[ ! -e "$workdir/$fname" ]]
-        then 
-            rmHelper "$fpath"
-        fi
+        [[ ! -e "$workdir/$fname" ]] && rmHelper "$fpath"
     done
 }
 
@@ -142,7 +142,9 @@ fi
 if $_regex
 then
     #Using grep as a pattern validator
-    echo "" | grep -P "$_regexpr" &>/dev/null
+    #If grep has a bad regular expression exit code should be 2
+    echo "2005" | grep -P "$_regexpr" &>/dev/null
+
     if [[ $? -eq 2 ]]
     then
         echo "Bad argument for -r: '$_regexpr' isn't a valid regex expression"
