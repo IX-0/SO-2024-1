@@ -112,7 +112,7 @@ do
     #Check if directory is not empty
     [[ "$fname" == "*" ]] && break
 
-    if [[ ! -f "$_workdir/$fname" ]]
+    if [[ ! -e "$_workdir/$fname" ]]
     then 
         rmHelper "$fpath"
     fi

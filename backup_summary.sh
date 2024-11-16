@@ -22,10 +22,7 @@ function summaryAdd() {
 }
 
 function printSummary() {
-    echo -n "While backing up $(basename $_workdir)${workdir##$_workdir}:"
-    echo -n " ${summary[errors]} Errors; ${summary[warnings]} Warnings;"
-    echo -n " ${summary[num_updated]} Updated;"
-    echo -e " ${summary[num_copied]} Copied (${summary[size_copied]}B); ${summary[num_removed]} Removed (${summary[size_removed]}B)\n"
+    echo "While backuping $(basename $_workdir)${workdir##$_workdir}: ${summary[errors]} Errors; ${summary[warnings]} Warnings; ${summary[num_updated]} Updated; ${summary[num_copied]} Copied (${summary[size_copied]}B); ${summary[num_removed]} Deleted (${summary[size_removed]}B)"
 }
 
 function cpHelper() {
@@ -224,6 +221,5 @@ then
 fi
 
 backUp "$_workdir" "$_backupdir"
-echo BACKUP DONE
 
 exit 0 #Made with love by Igor Baltarejo & Gonçalo Almeida
