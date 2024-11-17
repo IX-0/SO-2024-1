@@ -18,11 +18,7 @@ function compareFiles() {
     #Transform output in to an array and compare first element (checksum)
 
     sum1=($(md5sum "$1")); sum2=($(md5sum "$2"))
-    if [[ "${sum1[0]}" == "${sum2[0]}" ]] 
-    then
-        return 0
-    fi
-    return 1
+    return [[ "${sum1[0]}" == "${sum2[0]}" ]]
 }
 
 function backupCheck() {
@@ -94,6 +90,5 @@ _workdir=$(realpath "$1")
 _backupdir=$(realpath "$2")
 
 backupCheck "$_workdir" "$_backupdir"
-echo DONE
 
 exit 0 #Made with love by Igor Baltarejo & Gonçalo Almeida

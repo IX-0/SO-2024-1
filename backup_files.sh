@@ -118,5 +118,4 @@ do
     fi
 done 
 
-echo "BACKUP DONE"
 exit 0 #Made with love by Igor Baltarejo & Gonçalo Almeida

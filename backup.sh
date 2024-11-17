@@ -185,6 +185,5 @@ fi
 [[ ! -d "$_backupdir" ]] && mkdirHelper "$_backupdir"
 
 backUp "$_workdir" "$_backupdir"
-echo BACKUP DONE
 
 exit 0 #Made with love by Igor Baltarejo & Gonçalo Almeida
