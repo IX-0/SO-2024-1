@@ -116,7 +116,7 @@ function backUp() {
             backUp "$fpath" "$backupdir/$fname" 
         elif [[ ! -f "$backupdir/$fname" ]] || [[ "$fpath" -nt "$backupdir/$fname" ]]
         then
-            $_regex && [[ ! "$fname" =~ "$_regexpr" ]] && continue
+            $_regex && [[ ! "$fname" =~ $_regexpr ]] && continue
             
             cpHelper "$fpath" "$backupdir/$fname"
             

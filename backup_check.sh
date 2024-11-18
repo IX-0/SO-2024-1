@@ -12,13 +12,20 @@ _workdir=""
 _backupdir=""
 
 function compareFiles() {
-    #Returns 0 if contents are equal, 1 if not
-    #Using md5sum
-    #Output of md5sum: "checksum fname"
-    #Transform output in to an array and compare first element (checksum)
+    # Returns 0 if contents are equal, 1 if not
+    # Using md5sum
+    # Output of md5sum: "checksum fname"
+    # Transform output into an array and compare first element (checksum)
 
-    sum1=($(md5sum "$1")); sum2=($(md5sum "$2"))
-    return [[ "${sum1[0]}" == "${sum2[0]}" ]]
+    sum1=($(md5sum "$1"))
+    sum2=($(md5sum "$2"))
+    
+    if [[ "${sum1[0]}" == "${sum2[0]}" ]]
+    then
+        return 0  # Files are identical
+    else
+        return 1  # Files differ
+    fi
 }
 
 function backupCheck() {
@@ -49,7 +56,7 @@ function backupCheck() {
 
 while getopts ":h" flag
 do 
-    case $flag in
+    case $flag in   
         h)
             _help=true ;;
         *)
