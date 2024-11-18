@@ -33,3 +33,6 @@ warnings, ficheiros atualizados, ficheiros copiados e ficheiros apagados, e tama
 #### _backup_check.sh_
 Uso: backup_check.sh workdir backupdir
 Este script apenas permite verificar o backup feito com os outro scripts.
+
+#### _src/ e ignorefile_
+Esta foi a diretoria e ficheiro usados para testar as várias capacidades dos scripts, conforme descrito no relatório.
