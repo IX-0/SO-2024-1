@@ -1,4 +1,4 @@
-# projeto1_SO
+# SO-2024-1
 Projeto realizado no âmbito da cadeira de Sistemas Operativos.
 
 ### Objetivos:
